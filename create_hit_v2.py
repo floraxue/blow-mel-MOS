@@ -31,9 +31,11 @@ def creat_quesiton(expname):
     divs.append(test.format(testname=bads[1]))
 
     for i in range(10):
+        audio_id = 'audio{}'.format(i)
         src_id = 'srcreal{}'.format(i) 
         slider_id = 'sreal{}'.format(i)
         divs.append(real.format(realexp=expname, realname='undefined', 
+                                audio_id=audio_id,
                                 src_id=src_id, slider_id=slider_id))
 
     np.random.shuffle(divs)
@@ -42,10 +44,10 @@ def creat_quesiton(expname):
     for fn in os.listdir('audio_files/' + expname):
         filenames += fn + ","
     filenames = filenames[:-1]
-    filenames_div = filenames_div.format(filenames=filenames)
+    hidden_div = filenames_div.format(filenames=filenames)
 
     question_html_value = html_start
-    question_html_value += filenames_div
+    question_html_value += hidden_div
     for i in range(len(divs)):
         question_html_value += divs[i]
     question_html_value += html_end
@@ -53,12 +55,13 @@ def creat_quesiton(expname):
     return question_html_value
 
 
-parser=argparse.ArgumentParser(description='')
-parser.add_argument("--expname", type=str, required=True)
-args = parser.parse_args()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument("--expname", type=str, required=True)
+    args = parser.parse_args()
 
-q = creat_quesiton(args.expname)
-with open("gen_mturk.html", "w") as fp:
-    fp.write(q)
+    q = creat_quesiton(args.expname)
+    with open("gen_mturk.html", "w") as fp:
+        fp.write(q)
 
 
