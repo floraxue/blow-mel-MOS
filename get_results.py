@@ -20,7 +20,7 @@ def get_answers(hit_id):
         HITId=hit_id,
         AssignmentStatuses=['Submitted'],
         PaginationConfig={
-            'MaxItems': 150,
+            'MaxItems': 400,
             'PageSize': 75,
             #'StartingToken': ''
         }
@@ -60,7 +60,8 @@ def is_valid_answer(answer):
 
 def filter_valid_answers(all_answers):
     all_answers = np.array(all_answers)
-    valid = all_answers[list(map(is_valid_answer, all_answers))]
+    is_valid = list(map(is_valid_answer, all_answers))
+    valid = all_answers[is_valid]
     return valid
 
 
