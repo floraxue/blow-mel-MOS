@@ -18,9 +18,9 @@ def get_answers(hit_id):
     paginator = mturk.get_paginator('list_assignments_for_hit')
     response_iterator = paginator.paginate(
         HITId=hit_id,
-        AssignmentStatuses=['Submitted'],
+        AssignmentStatuses=['Submitted', 'Approved'],
         PaginationConfig={
-            'MaxItems': 400,
+            'MaxItems': 500,
             'PageSize': 75,
             #'StartingToken': ''
         }

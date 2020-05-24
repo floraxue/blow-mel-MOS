@@ -10,7 +10,7 @@ sandbox_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
 
 keyid = None
 key = None
-with open("aws.csv", "r") as fp:
+with open("../rootkey_flora.csv", "r") as fp:
     for i, line in enumerate(fp):
         if i == 0:
             keyid = str(line).split("=")[1].strip()
@@ -40,7 +40,7 @@ def post_question(question_html_value):
     # reward is what Workers will be paid when you approve their work
     # Check out the documentation on CreateHIT for more details
     response = mtc.create_hit(
-                              MaxAssignments=300,
+                              MaxAssignments=500,
                               AutoApprovalDelayInSeconds=604800,
                             LifetimeInSeconds=604800,
                             AssignmentDurationInSeconds=3000,
