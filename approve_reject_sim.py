@@ -1,6 +1,6 @@
 import boto3
 import xmltodict
-from get_results import is_valid_answer
+from get_sim_results import is_valid_answer
 
 
 def get_assignments(hit_id):
@@ -86,7 +86,7 @@ if __name__ == '__main__':
 
     hit_ids = {}
     # with open("posted-daniel.txt", "r") as hitFile:
-    with open("posted-flora.txt", "r") as hitFile:
+    with open("similarity-flora.txt", "r") as hitFile:
         for line in hitFile:
             experiment, hit_id = [c.strip() for c in line.split(",")]
             hit_ids[experiment] = hit_id

@@ -18,16 +18,16 @@ def create_div(divname, expname, dirname_pair, fname_pair):
     audio_controls = [
         audio_ctrl.format(expname=expname, fname=fname_pair[0],
                           dirname=dirname_pair[0],
-                          divname='audiosrc_vc'),
+                          divname=divname+'_audiosrc_vc'),
         audio_ctrl.format(expname=expname, fname=fname_pair[1],
                           dirname=dirname_pair[1],
-                          divname='audiosrc_t')
+                          divname=divname+'_audiosrc_t')
     ]
     random.shuffle(audio_controls)
 
-    radio_control = radio_ctrl.format(divname='radio',
+    radio_control = radio_ctrl.format(divname=divname+'_radio',
                                       expname=expname,
-                                      fname=fname_pair[0])
+                                      fname=fname_pair[0].split('.')[0])
 
     div = q_div.format(divname=divname+'_div',
                        audio_control1=audio_controls[0],

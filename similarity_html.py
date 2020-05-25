@@ -1,5 +1,16 @@
 
 html_start = """
+
+<HTMLQuestion xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2011-11-11/HTMLQuestion.xsd">
+<HTMLContent><![CDATA[
+<!-- YOUR HTML BEGINS -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>
+<script type='text/javascript' src='https://s3.amazonaws.com/mturk-public/externalHIT_v1.js'></script>
+</head>
+<body>
 <!-- You must include this JavaScript file -->
 <script src="https://assets.crowd.aws/crowd-html-elements.js"></script>
 <style>
@@ -75,8 +86,32 @@ html_end = """
 </crowd-form>
 <script language='Javascript'>turkSetAssignmentID();</script>
 
-
 <script type="text/javascript">
+
+function validateForm() {
+    var groups = document.querySelectorAll("crowd-radio-group");
+    var isValid = true;
+    for (var i = 0; i < groups.length; i++) {
+        responseGiven = false;
+        var children = groups[i].children;
+        for (var j = 0; j < children.length; j++) {
+            responseGiven = responseGiven || children[j].checked;
+        }
+        if (!responseGiven) {
+            groups[i].className = "invalid";
+            isValid = false;
+        }
+        else {
+            groups[i].className = ""
+        }
+    }
+    return isValid;
+}
+document.querySelector('crowd-form').onsubmit = function(e ) {
+    if (!validateForm()) {
+        e.preventDefault();
+    }
+};
 function getRandomSubarray(arr, size) {
     var shuffled = arr.slice(0), i = arr.length, min = i - size, temp, index;
     while (i-- > min) {
@@ -89,29 +124,38 @@ function getRandomSubarray(arr, size) {
 }
 console.log('here');
 
-var hidden_div = document.getElementById('hidden_div');
-var filenames = hidden_div.innerHTML;
-filenames = filenames.split(',');
+var hidden_real_fn = document.getElementById('hidden_real_fn');
+var real_fns = hidden_real_fn.innerHTML;
+real_fns = real_fns.split(',');
+var hidden_original_fn = document.getElementById('hidden_original_fn');
+var original_fns = hidden_original_fn.innerHTML;
+original_fns = original_fns.split(',');
 
-var randomSubset = getRandomSubarray(filenames, 10);
-
-var audio_reals = [];
-var src_reals = [];
-var slider_reals = [];
-for (i = 0; i < 10; i++) {
-    audio_reals.push(document.getElementById('audio' + i));
-    src_reals.push(document.getElementById('srcreal' + i));
-    slider_reals.push(document.getElementById('sreal' + i));
-}
+var randomSubset = getRandomSubarray(real_fns, 10);
 
 var base_audio_dir = 'https://floraxue.github.io/blow-mel-MOS/audio_files/';
-var expname = src_reals[0].src.split("/");
+var real0_audiosrc_vc = document.getElementById('real0_audiosrc_vc');
+var expname = real0_audiosrc_vc.src.split("/");
 expname = expname[expname.length - 2];
 
 for (i = 0; i < 10; i++) {
-    src_reals[i].src = base_audio_dir + expname + '/' + randomSubset[i];
-    slider_reals[i].setAttribute("name", expname + '-' + randomSubset[i]);
-    audio_reals[i].load();
+    var audiosrc_vc = document.getElementById('real' + i + "_audiosrc_vc");
+    var audiosrc_t = document.getElementById('real' + i + "_audiosrc_t");
+    var radios = document.getElementsByClassName('real' + i + "_radio");
+    audiosrc_vc.src = base_audio_dir + expname + '/' + randomSubset[i];
+    target_fname = randomSubset[i].split('_')[3];  // p226_04242_to_p363.wav
+    audiosrc_t.src = base_audio_dir + 'originals/' + target_fname;
+    for (j = 0; j < radios.length; j++) {
+        var str = radios[j].getAttribute('name');
+        var fname_base = randomSubset[i].split('.')[0];
+        var res = str.replace('unknown_vc', fname_base);
+        radios[j].setAttribute('name', res);
+    }
+}
+
+var audio_controls = document.getElementsByClassName('audio');
+for (i = 0; i < audio_controls.length; i++) {
+    audio_controls[i].load();
 }
 
 </script>
@@ -137,16 +181,16 @@ q_div = """
 """
 
 radio_ctrl = """
-    <crowd-radio-group id="{divname}">
-        <crowd-radio-button id="1" name="{expname}-{fname}.same_sure"       value="1">Same speaker: absolutely sure</crowd-radio-button>
-        <crowd-radio-button id="2" name="{expname}-{fname}.same_maybe"      value="2">Same speaker: not sure</crowd-radio-button>
-        <crowd-radio-button id="3" name="{expname}-{fname}.different_maybe" value="3">Different speakers: not sure</crowd-radio-button>
-        <crowd-radio-button id="4" name="{expname}-{fname}.different_sure"  value="4">Different speakers: absolutely sure</crowd-radio-button>
+    <crowd-radio-group>
+        <crowd-radio-button class="{divname}" name="{expname}-{fname}.same_sure"       value="1">Same speaker: absolutely sure</crowd-radio-button>
+        <crowd-radio-button class="{divname}" name="{expname}-{fname}.same_maybe"      value="2">Same speaker: not sure</crowd-radio-button>
+        <crowd-radio-button class="{divname}" name="{expname}-{fname}.different_maybe" value="3">Different speakers: not sure</crowd-radio-button>
+        <crowd-radio-button class="{divname}" name="{expname}-{fname}.different_sure"  value="4">Different speakers: absolutely sure</crowd-radio-button>
     </crowd-radio-group>
 """
 
 audio_ctrl = """
-    <audio class="audio" name="{expname}-{fname}" controls="">
+    <audio class="audio" name="{expname}" controls="">
         <source id="{divname}" src="https://floraxue.github.io/blow-mel-MOS/audio_files/{dirname}/{fname}" type="audio/mpeg" />
     </audio>
 """

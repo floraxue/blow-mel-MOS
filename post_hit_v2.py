@@ -66,5 +66,5 @@ if __name__ == '__main__':
 
     q = creat_quesiton(args.expname)
     hit_id = post_question(q)
-    with open("posted.txt", "a") as fp:
+    with open("posted-daniel.txt", "a") as fp:
         fp.write(args.expname + "," + hit_id + "\n")

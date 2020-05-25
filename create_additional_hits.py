@@ -19,11 +19,11 @@ mtc = boto3.client('mturk',
 	                # endpoint_url = sandbox_url
 	                )
 
-hid_id = '3EGKVCRQFWLJ40YX03928FF80Q6YB1'
-unique_request_token = '3EGKVCRQFWLJ40YX03928FF80Q6YB1_addtional_1'
+hid_id = '33Q5P9PUSPF2JV08AP7GX6USO5DZC3'
+unique_request_token = '33Q5P9PUSPF2JV08AP7GX6USO5DZC3_addtional_1'
 response = mtc.create_additional_assignments_for_hit(
     HITId=hid_id,
-    NumberOfAdditionalAssignments=100,
+    NumberOfAdditionalAssignments=200,
     UniqueRequestToken=unique_request_token
 )
 

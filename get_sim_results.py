@@ -46,16 +46,16 @@ def get_answers(hit_id):
 
 def is_valid_answer(answer):
     col_names = list(answer.keys())
-    gt_cols = [c for c in col_names if c[:2] == "GT"]
-    bad_cols = [c for c in col_names if c[:3] == "bad"]
+    gt_diff_cols = [c for c in col_names if c[:2] == "GT" and "different" in c]
+    bad_same_cols = [c for c in col_names if c[:3] == "bad" and "same" in c]
 
-    gt_scores = [int(answer[c]) for c in gt_cols]
-    bad_scores = [int(answer[c]) for c in bad_cols]
+    is_valid = True
+    for c in gt_diff_cols + bad_same_cols:
+        if answer[c] == 'true':
+            is_valid = False
+            break
 
-    return ((gt_scores[0] > bad_scores[0]) & 
-            (gt_scores[1] > bad_scores[0]) &
-            (gt_scores[0] > bad_scores[1]) &
-            (gt_scores[1] > bad_scores[1]))
+    return is_valid
 
 
 def filter_valid_answers(all_answers):
@@ -71,15 +71,32 @@ def process_valid_answers(experiment, answers):
         for k in answer.keys():
             if k[:2] == "GT" or k[:3] == "bad":
                 continue
-            if k not in audios:
-                audios[k] = []
-            audios[k].append(int(answer[k]))
+            if answer[k] == 'false':
+                continue
+            exp_fname, rating = k.split('.')[:-1]
+            if exp_fname not in audios:
+                audios[exp_fname] = {"same_sure": 0,
+                                     "same_maybe": 0,
+                                     "different_maybe": 0,
+                                     "different_sure": 0}
+            audios[exp_fname][rating] += 1
 
-    scores = {key: get_mos(np.array(values)) for key, values in audios.items()}
-    overall = [v for sublist in audios.values() for v in sublist]
-    scores['overall'] = get_mos(np.array(overall))
-    json.dump(scores, open(experiment + "_res.json", "w"))
-    print(experiment, 'mu', scores['overall'][0], 'ci', scores['overall'][1], 'N', scores['overall'][2])
+    total = 0
+    same_sure = 0
+    same_maybe = 0
+    for exp_fname, ratings in audios.items():
+        total += sum(ratings.values())
+        same_sure += ratings["same_sure"]
+        same_maybe += ratings["same_maybe"]
+    audios["overall"] = {"total": total,
+                         "same_sure": same_sure,
+                         "same_maybe": same_maybe,
+                         "same": same_sure + same_maybe,
+                         "same_sure_p": same_sure / total,
+                         "same_maybe_p": same_maybe / total,
+                         "same_p": (same_sure + same_maybe) / total}
+    json.dump(audios, open(experiment + "_sim_res.json", "w"))
+    pprint(audios['overall'])
 
 
 if __name__ == '__main__':
@@ -90,15 +107,14 @@ if __name__ == '__main__':
         line = fp.readline()
         key = line.split("=")[1].strip()
     mturk = boto3.client('mturk',
-       aws_access_key_id = keyid,
-       aws_secret_access_key = key,
-       region_name='us-east-1',
-       # endpoint_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
-    )
+                         aws_access_key_id = keyid,
+                         aws_secret_access_key = key,
+                         region_name='us-east-1',
+                         # endpoint_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
+                         )
 
     hit_ids = {}
-    # with open("posted-daniel.txt", "r") as hitFile:
-    with open("posted-flora.txt", "r") as hitFile:
+    with open("similarity-flora.txt", "r") as hitFile:
         for line in hitFile:
             experiment, hit_id = [c.strip() for c in line.split(",")]
             hit_ids[experiment] = hit_id
