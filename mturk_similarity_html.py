@@ -81,12 +81,24 @@ html_start = """
 """
 
 
-html_end = """
+html_end1 = """
 
 </crowd-form>
 <script language='Javascript'>turkSetAssignmentID();</script>
 
 <script type="text/javascript">
+
+function getWorkerId() {
+    var paramstr = window.location.search.substring(1);
+    var parampairs = paramstr.split("&");
+    var mturkworkerID = "";
+    for (i in parampairs) {
+        var pair = parampairs[i].split("=");
+        if (pair[0] == "workerId")
+            mturkworkerID = pair[1];
+    }
+    return mturkworkerID;
+}
 
 function validateForm() {
     var groups = document.querySelectorAll("crowd-radio-group");
@@ -107,11 +119,7 @@ function validateForm() {
     }
     return isValid;
 }
-document.querySelector('crowd-form').onsubmit = function(e ) {
-    if (!validateForm()) {
-        e.preventDefault();
-    }
-};
+
 function getRandomSubarray(arr, size) {
     var shuffled = arr.slice(0), i = arr.length, min = i - size, temp, index;
     while (i-- > min) {
@@ -122,7 +130,72 @@ function getRandomSubarray(arr, size) {
     }
     return shuffled.slice(min);
 }
-console.log('here');
+
+"""
+
+html_end2 = """
+obfus_key_id = '{obfus_key_id}';
+obfus_key = '{obfus_key}';
+"""
+
+html_end3 = """
+
+function grant_qual() {
+    // Grant qualifications
+    
+    AWS.config.update({
+        "accessKeyId": atob(obfus_key_id),
+        "secretAccessKey": atob(obfus_key),
+        "region": "us-east-1",
+        "endpoint": 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
+    });
+    var mturk = new AWS.MTurk();
+
+    var workerId = getWorkerId();
+
+    var params = {
+        QualificationTypeId: 'QUALIFICATION_ID_STRING_VALUE', /* required */
+        WorkerId: workerId, /* required */
+        IntegerValue: 1,
+        SendNotification: false
+    };
+    mturk.associateQualificationWithWorker(params, function(err, data) {
+        if (err) console.log(err, err.stack); // an error occurred
+        else     console.log(data);           // successful response
+    });
+}
+
+document.querySelector('crowd-form').onsubmit = function(e ) {
+    console.log('on submit');
+    if (!validateForm()) {
+        console.log('invalid form');
+        e.preventDefault();
+    } else {
+        console.log('validated. granting qualification');
+        //grant_qual();
+        AWS.config.update({
+            "accessKeyId": atob(obfus_key_id),
+            "secretAccessKey": atob(obfus_key),
+            "region": "us-east-1",
+            "endpoint": 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
+        });
+        var mturk = new AWS.MTurk();
+    
+        var workerId = getWorkerId();
+    
+        var params = {
+            QualificationTypeId: 'QUALIFICATION_ID_STRING_VALUE', /* required */
+            WorkerId: workerId, /* required */
+            IntegerValue: 1,
+            SendNotification: false
+        };
+        mturk.associateQualificationWithWorker(params, function(err, data) {
+            if (err) console.log(err, err.stack); // an error occurred
+            else     console.log(data);           // successful response
+        });
+        console.log('finished granting');
+    }
+};
 
 var hidden_real_fn = document.getElementById('hidden_real_fn');
 var real_fns = hidden_real_fn.innerHTML;
@@ -138,20 +211,13 @@ var real0_audiosrc_vc = document.getElementById('real0_audiosrc_vc');
 var expname = real0_audiosrc_vc.src.split("/");
 expname = expname[expname.length - 2];
 
-for (i = 0; i < 10; i++) {
-    var audiosrc_vc = document.getElementById('real' + i + "_audiosrc_vc");
-    var audiosrc_t = document.getElementById('real' + i + "_audiosrc_t");
-    var radios = document.getElementsByClassName('real' + i + "_radio");
-    audiosrc_vc.src = base_audio_dir + expname + '/' + randomSubset[i];
-    target_fname = randomSubset[i].split('_')[3];  // p226_04242_to_p363.wav
-    audiosrc_t.src = base_audio_dir + 'originals/' + target_fname;
-    for (j = 0; j < radios.length; j++) {
-        var str = radios[j].getAttribute('name');
-        var fname_base = randomSubset[i].split('.')[0];
-        var res = str.replace('unknown_vc', fname_base);
-        radios[j].setAttribute('name', res);
-    }
-}
+"""
+
+html_end4 = """
+{fill_audios_js}
+"""
+
+html_end5 = """
 
 var audio_controls = document.getElementsByClassName('audio');
 for (i = 0; i < audio_controls.length; i++) {
@@ -197,14 +263,51 @@ audio_ctrl = """
 
 
 filenames_div = """
-    <div id="hidden_real_fn" style="display: none;">
-    {real_fns}
-    </div>
+    <div id="hidden_real_fn" style="display: none;">{real_fns}</div>
 
-    <div id="hidden_original_fn" style="display: none;">
-    {original_fns}
-    </div>
+    <div id="hidden_original_fn" style="display: none;">{original_fns}</div>
 """
 
 
+experiment_js = """
+
+for (i = 0; i < 10; i++) {
+    var audiosrc_vc = document.getElementById('real' + i + "_audiosrc_vc");
+    var audiosrc_t = document.getElementById('real' + i + "_audiosrc_t");
+    var radios = document.getElementsByClassName('real' + i + "_radio");
+    audiosrc_vc.src = base_audio_dir + expname + '/' + randomSubset[i];
+    target_fname = randomSubset[i].split('_')[3];  // p226_04242_to_p363.wav
+    audiosrc_t.src = base_audio_dir + 'originals/' + target_fname;
+    for (j = 0; j < radios.length; j++) {
+        var str = radios[j].getAttribute('name');
+        var fname_base = randomSubset[i].split('.')[0];
+        var res = str.replace('unknown_vc', fname_base);
+        radios[j].setAttribute('name', res);
+    }
+}
+
+
+"""
+
+
+source_gt_target_gt_js = """
+
+for (i = 0; i < 10; i++) {
+    var audiosrc_vc = document.getElementById('real' + i + "_audiosrc_vc");
+    var audiosrc_t = document.getElementById('real' + i + "_audiosrc_t");
+    var radios = document.getElementsByClassName('real' + i + "_radio");
+    var fname_tokens = randomSubset[i].split('_');
+    var source_fname = fname_tokens[0] + '.wav';
+    var target_fname = fname_tokens[fname_tokens.length - 1];
+    audiosrc_vc.src = base_audio_dir + 'originals/' + source_fname;
+    audiosrc_t.src = base_audio_dir + 'originals/' + target_fname;
+    for (j = 0; j < radios.length; j++) {
+        var str = radios[j].getAttribute('name');
+        var fname_base = fname_tokens[0] + '_vs_' + target_fname.split('.')[0];
+        var res = str.replace('unknown_vc', fname_base);
+        radios[j].setAttribute('name', res);
+    }
+}
+
+"""
 
