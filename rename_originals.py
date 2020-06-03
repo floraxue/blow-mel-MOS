@@ -2,7 +2,10 @@ import os
 import shutil
 
 
-ori_dir = 'audio_files/originals'
+ori_dir = '/Users/floraxue/adaptive-tts/blow-syn/targets_2'
+
+os.makedirs('audio_files/targets_gt1', exist_ok=True)
+os.makedirs('audio_files/targets_gt2', exist_ok=True)
 
 person_to_fn = {}
 for fn in os.listdir(ori_dir):
@@ -15,9 +18,12 @@ for fn in os.listdir(ori_dir):
 for person, filenames in person_to_fn.items():
 	fn = filenames[0]
 	src = os.path.join(ori_dir, fn)
-	dst = os.path.join(ori_dir, person + '.wav')
+	dst = os.path.join('audio_files/targets_gt1', person + '.wav')
 	shutil.move(src, dst)
-	for fn in filenames[1:]:
-		os.remove(os.path.join(ori_dir, fn))
+
+	fn = filenames[1]
+	src = os.path.join(ori_dir, fn)
+	dst = os.path.join('audio_files/targets_gt2', person + '.wav')
+	shutil.move(src, dst)
 
 

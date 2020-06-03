@@ -82,5 +82,5 @@ question_html = create_sim_source_gt_to_target_gt(args.expname, obfus_key_id, ob
 num_loops = args.num_assignments // max_ass_per_hit + 1
 for i in range(num_loops):
     hit_id = post_question(question_html, qual_id)
-    with open("test-similarity-flora.txt", "a") as fp:
+    with open("test-similarity-with-qual-flora.txt", "a") as fp:
         fp.write(args.expname + "," + hit_id + "\n")

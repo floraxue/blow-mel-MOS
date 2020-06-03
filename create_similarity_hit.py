@@ -92,7 +92,7 @@ def create_sim_question(expname):
     return question_html_value
 
 
-def create_sim_source_gt_to_target_gt(expname, obfus_key_id, obfus_key, qual_id):
+def create_sim_source_gt_to_target_gt(expname):
     divs = create_tests()
 
     for i in range(10):
@@ -118,17 +118,41 @@ def create_sim_source_gt_to_target_gt(expname, obfus_key_id, obfus_key, qual_id)
     question_html_value += hidden_div
     for i in range(len(divs)):
         question_html_value += divs[i]
-    html_end = (html_end1 +
-                html_end2.format(obfus_key_id=obfus_key_id, obfus_key=obfus_key) +
-                html_end3.replace('QUALIFICATION_ID_STRING_VALUE', qual_id) +
-                html_end4.format(fill_audios_js=source_gt_target_gt_js) +
-                html_end5
-                )
-    question_html_value += html_end
-    # question_html_value += html_end.format(,
-    #                                        obfus_key_id=obfus_key_id,
-    #                                        # obfus_key=obfus_key
-    #                                        )
+    html_end_filled = html_end.replace('{fill_audios_js}', source_gt_target_gt_js)
+    question_html_value += html_end_filled
+
+    return question_html_value
+
+
+def create_sim_target_gt_to_target_gt(expname):
+    divs = create_tests()
+
+    for i in range(10):
+        divs.append(create_div(divname='real'+str(i),
+                               expname=expname,
+                               fname_pair=('unknown_vc', 'unknown_t'),
+                               dirname_pair=('target_gt1', 'target_gt2')))
+
+    np.random.shuffle(divs)
+
+    real_fns = ""
+    for fn in os.listdir('audio_files/blow_baseline'):
+        if fn.endswith('.wav'):
+            real_fns += fn + ","
+    real_fns = real_fns[:-1]
+    original_fns = ""
+    for fn in os.listdir('audio_files/originals'):
+        original_fns += fn + ","
+    original_fns = original_fns[:-1]
+    hidden_div = filenames_div.format(real_fns=real_fns,
+                                      original_fns=original_fns)
+
+    question_html_value = html_start
+    question_html_value += hidden_div
+    for i in range(len(divs)):
+        question_html_value += divs[i]
+    html_end_filled = html_end.replace('{fill_audios_js}', target_gt_target_gt_js)
+    question_html_value += html_end_filled
 
     return question_html_value
 
@@ -142,11 +166,8 @@ if __name__ == "__main__":
     # with open("gen_sim_mturk.html", "w") as fp:
     #     fp.write(q)
 
-    q = create_sim_source_gt_to_target_gt(args.expname,
-                                          obfus_key_id='QUtJQUpCWDVHUjJBUkQ2NVhIWFE=',
-                                          obfus_key='WUZMeEFtSHUvaVdrSFEzSXFlM2tyWUtVNUYvUzQvRHNEdWxPTUgwTw==',
-                                          qual_id='TEMP_HOLDER')
-    with open("gen_sim_mturk_sgt_tgt.html", "w") as fp:
+    q = create_sim_source_gt_to_target_gt(args.expname)
+    with open("gen_sim_mturk_tgt_tgt.html", "w") as fp:
         fp.write(q)
 
 

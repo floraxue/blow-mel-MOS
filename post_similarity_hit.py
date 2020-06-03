@@ -1,6 +1,6 @@
 import argparse
 import boto3
-from create_similarity_hit import create_sim_question
+from create_similarity_hit import create_sim_question, create_sim_source_gt_to_target_gt
 
 
 sandbox_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
@@ -16,7 +16,7 @@ def post_question(question_html_value):
                        )
 
     response = mtc.create_hit(
-        MaxAssignments=500,
+        MaxAssignments=150,
         AutoApprovalDelayInSeconds=604800,
         LifetimeInSeconds=604800,
         AssignmentDurationInSeconds=3000,
@@ -50,7 +50,10 @@ with open("aws.csv", "r") as fp:
             key = str(line).split("=")[1].strip()
 print(keyid, key)
 
-q = create_sim_question(args.expname)
+if args.expname == 'source_gt_to_target_gt':
+    q = create_sim_source_gt_to_target_gt(args.expname)
+else:
+    q = create_sim_question(args.expname)
 hit_id = post_question(q)
 with open("similarity-flora.txt", "a") as fp:
     fp.write(args.expname + "," + hit_id + "\n")
