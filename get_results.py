@@ -82,9 +82,19 @@ def process_valid_answers(experiment, answers):
     print(experiment, 'mu', scores['overall'][0], 'ci', scores['overall'][1], 'N', scores['overall'][2])
 
 
+def extra_processing(all_answers):
+    filtered = []
+    for ans in all_answers:
+        ones = [v for v in ans.values() if int(v) == 1]
+        if len(ones) > 8:
+            continue
+        filtered.append((ans))
+    return filtered
+
+
 if __name__ == '__main__':
-    # with open("../rootkey_flora.csv", "r") as fp:
-    with open("aws.csv", "r") as fp:
+    with open("../rootkey_flora.csv", "r") as fp:
+    # with open("aws.csv", "r") as fp:
         line = fp.readline()
         keyid = line.split("=")[1].strip()
         line = fp.readline()
@@ -97,8 +107,8 @@ if __name__ == '__main__':
     )
 
     hit_ids = {}
-    # with open("posted-daniel.txt", "r") as hitFile:
-    with open("posted-flora.txt", "r") as hitFile:
+    with open("posted-daniel.txt", "r") as hitFile:
+    # with open("posted-flora.txt", "r") as hitFile:
         for line in hitFile:
             experiment, hit_id = [c.strip() for c in line.split(",")]
             hit_ids[experiment] = hit_id
@@ -107,4 +117,6 @@ if __name__ == '__main__':
         print("----", experiment, "----")
         answers = get_answers(hit_ids[experiment])
         answers = filter_valid_answers(answers)
+        if experiment == 'blow_coeff':
+            answers = extra_processing(answers)
         process_valid_answers(experiment, answers)

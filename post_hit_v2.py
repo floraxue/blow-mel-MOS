@@ -8,16 +8,7 @@ bad_names = ["bad-LJ001-0015", "bad-LJ001-0051", "bad-LJ001-0063", "bad-LJ001-00
 good_names = ["GT-LJ001-0063", "GT-LJ001-0072", "GT-LJ001-0096", "GT-LJ001-0102", "GT-LJ001-0173"]
 sandbox_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
 
-keyid = None
-key = None
-with open("../rootkey_flora.csv", "r") as fp:
-    for i, line in enumerate(fp):
-        if i == 0:
-            keyid = str(line).split("=")[1].strip()
-        else:
-            key = str(line).split("=")[1].strip()
 
-print(keyid, key)
 def post_question(question_html_value):
 
     # Create your connection to MTurk
@@ -40,7 +31,7 @@ def post_question(question_html_value):
     # reward is what Workers will be paid when you approve their work
     # Check out the documentation on CreateHIT for more details
     response = mtc.create_hit(
-                              MaxAssignments=500,
+                              MaxAssignments=150,
                               AutoApprovalDelayInSeconds=604800,
                             LifetimeInSeconds=604800,
                             AssignmentDurationInSeconds=3000,
@@ -64,7 +55,20 @@ if __name__ == '__main__':
     parser.add_argument("--expname", type=str, required=True)
     args = parser.parse_args()
 
+    keyid = None
+    key = None
+    # with open("../rootkey_flora.csv", "r") as fp:
+    with open("aws.csv", "r") as fp:
+        for i, line in enumerate(fp):
+            if i == 0:
+                keyid = str(line).split("=")[1].strip()
+            else:
+                key = str(line).split("=")[1].strip()
+
+    print(keyid, key)
+
     q = creat_quesiton(args.expname)
     hit_id = post_question(q)
-    with open("posted-daniel.txt", "a") as fp:
+    # with open("posted-daniel.txt", "a") as fp:
+    with open("posted-flora.txt", "a") as fp:
         fp.write(args.expname + "," + hit_id + "\n")
